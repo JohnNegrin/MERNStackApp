@@ -31,7 +31,14 @@ const Product = ({ product }) => {
 };
 
 Product.propTypes = {
-  product: PropTypes.string.isRequired,
+  product: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    image: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    rating: PropTypes.number.isRequired,
+    numReviews: PropTypes.number.isRequired,
+    price: PropTypes.number.isRequired,
+  }).isRequired,
 };
 
 export default Product;
