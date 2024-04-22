@@ -1,5 +1,7 @@
+import { useRef, useState, useEffect } from "react";
 import { Dropdown, Button, Form, Row, Col } from "react-bootstrap";
 import { useParams, Link } from "react-router-dom";
+
 import { useGetProductsQuery } from "../slices/productsApiSlice";
 import Product from "../components/Product";
 import Loader from "../components/Loader";
@@ -10,11 +12,42 @@ import Meta from "../components/Meta";
 
 const HomeScreen = () => {
   const { pageNumber, keyword } = useParams();
+  let minimumRef = useRef();
+  let maximumRef = useRef();
+
+  // https://robinwieruch.de/react-form/
 
   const { data, isLoading, error } = useGetProductsQuery({
     keyword,
     pageNumber,
   });
+
+  const [products, setProducts] = useState(data?.products || []);
+
+  useEffect(() => {
+    if (data?.products) {
+      setProducts(data.products);
+    }
+  }, [data]);
+
+  const inRange = (product) => {
+    const price = product.price;
+    if (minimumRef.current.value === "" || maximumRef.current.value === "") {
+      return true;
+    } else if (
+      price > minimumRef.current.value &&
+      price < maximumRef.current.value
+    ) {
+      return true;
+    }
+  };
+
+  const priceFilter = (e) => {
+    e.preventDefault();
+
+    const filteredProducts = data.products.filter(inRange);
+    setProducts(filteredProducts);
+  };
 
   console.log(data);
 
@@ -27,7 +60,6 @@ const HomeScreen = () => {
           Go Back
         </Link>
       )} */}
-
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -41,20 +73,26 @@ const HomeScreen = () => {
           {/*  BEGINNING OF ADDED CODE */}
           <div className="d-flex">
             {/* Form for submitting price range */}
-            <Form className="d-flex">
+            <Form className="d-flex" onSubmit={priceFilter}>
               <Button type="submit" className="me-1">
                 Filter
               </Button>
 
               <div className="d-flex">
-                <Form.Control
+                <input
+                  type="text"
                   placeholder="Min Price"
-                  className="me-1 "
-                ></Form.Control>
-                <Form.Control
+                  name="mininmum"
+                  className="me-1 form-control"
+                  ref={minimumRef}
+                />
+                <input
+                  type="text"
                   placeholder="Max Price"
-                  className="ms-1"
-                ></Form.Control>
+                  name="maximum"
+                  className="ms-1 form-control"
+                  ref={maximumRef}
+                />
               </div>
             </Form>
             {/* Form for submitting  category filter */}
@@ -71,7 +109,7 @@ const HomeScreen = () => {
           </div>
           {/* END OF ADDED CODE */}
           <Row>
-            {data.products.map((product) => (
+            {products.map((product) => (
               <Col key={product._id} sm={12} md={6} lg={4} xl={3}>
                 <Product product={product} />
               </Col>
