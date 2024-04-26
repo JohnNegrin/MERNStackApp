@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-router.post('/contact', (req, res) => {
+router.post('/', (req, res) => {
     const { subject, message } = req.body;
     if (!subject || !message) {
         return res.status(400).send('Subject and message are required');
@@ -22,7 +22,7 @@ router.post('/contact', (req, res) => {
 
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: 'your-receiving-email@example.com',
+        to: process.env.EMAIL_USER,
         subject: subject,
         text: message
     };

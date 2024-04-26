@@ -1,7 +1,6 @@
 import { Row, Col } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useGetProductsQuery } from '../slices/productsApiSlice';
-import { Link } from 'react-router-dom';
 import Product from '../components/Product';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
@@ -11,7 +10,6 @@ import Meta from '../components/Meta';
 
 const HomeScreen = () => {
   const { pageNumber, keyword } = useParams();
-
 
   const { data, isLoading, error } = useGetProductsQuery({
     keyword,
@@ -26,7 +24,7 @@ const HomeScreen = () => {
         <Link to='/' className='btn btn-light mb-4'>
           Go Back
         </Link>
-      )}   
+      )}
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -35,9 +33,9 @@ const HomeScreen = () => {
         </Message>
       ) : (
         <>
-        <Meta />
-        <h1>Latest Products</h1>
-            <Row>
+          <Meta />
+          <h1>Latest Products</h1>
+          <Row>
             {data.products.map((product) => (
               <Col key={product._id} sm={12} md={6} lg={4} xl={3}>
                 <Product product={product} />
@@ -51,6 +49,11 @@ const HomeScreen = () => {
           />
         </>
       )}
+      <div className="d-flex justify-content-center mt-4">
+        <Link to='/contact' className='btn btn-primary'>
+          Contact Us
+        </Link>
+      </div>
     </>
   );
 };
