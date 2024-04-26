@@ -1,8 +1,10 @@
 import { useRef, useState, useEffect } from "react";
 import { Dropdown, Button, Form, Row, Col } from "react-bootstrap";
-import { useParams, Link } from "react-router-dom";
-
-import { useGetProductsQuery } from "../slices/productsApiSlice";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  useGetProductsQuery,
+  useGetAllProductsQuery,
+} from "../slices/productsApiSlice";
 import Product from "../components/Product";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
@@ -11,18 +13,38 @@ import ProductCarousel from "../components/ProductCarousel";
 import Meta from "../components/Meta";
 
 const HomeScreen = () => {
-  const { pageNumber, keyword } = useParams();
+  const { pageNumber, keyword, category, maxPrice, minPrice } = useParams();
+  const navigate = useNavigate();
   let minimumRef = useRef();
   let maximumRef = useRef();
 
   // https://robinwieruch.de/react-form/
 
+  const { data: allData, isloading, err } = useGetAllProductsQuery();
   const { data, isLoading, error } = useGetProductsQuery({
     keyword,
     pageNumber,
+    category,
   });
 
   const [products, setProducts] = useState(data?.products || []);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [minimumPrice, setMinimumPrice] = useState();
+  const [maximumPrice, setMaximumPrice] = useState();
+
+  useEffect(() => {
+    if (allData) {
+      const tempCatSet = new Set();
+      allData.forEach((item) => {
+        tempCatSet.add(item.category);
+      });
+
+      const tempCatArr = [...tempCatSet];
+      tempCatArr.push("All");
+      setCategories(tempCatArr);
+    }
+  }, [allData]);
 
   useEffect(() => {
     if (data?.products) {
@@ -32,7 +54,9 @@ const HomeScreen = () => {
 
   const inRange = (product) => {
     const price = product.price;
+
     if (minimumRef.current.value === "" || maximumRef.current.value === "") {
+      // display all products if min and max value are not provided
       return true;
     } else if (
       price > minimumRef.current.value &&
@@ -40,6 +64,8 @@ const HomeScreen = () => {
     ) {
       return true;
     }
+
+    return false;
   };
 
   const priceFilter = (e) => {
@@ -49,7 +75,22 @@ const HomeScreen = () => {
     setProducts(filteredProducts);
   };
 
-  console.log(data);
+  const categoryFilter = (e) => {
+    e.preventDefault();
+    console.log(selectedCategory);
+    if (selectedCategory === "All") {
+      setSelectedCategory("");
+      navigate(`/page/${data?.page}`);
+    } else {
+      navigate(`/page/${data?.page}/${selectedCategory}`);
+    }
+
+    const filteredProducts = data.products.filter(
+      (product) => product.category === selectedCategory
+    );
+
+    setProducts(filteredProducts);
+  };
 
   return (
     <>
@@ -96,13 +137,20 @@ const HomeScreen = () => {
               </div>
             </Form>
             {/* Form for submitting  category filter */}
-            <Form className="d-flex ms-2">
-              <Dropdown>
+            <Form className="d-flex ms-2" onSubmit={categoryFilter}>
+              <Dropdown onSelect={(category) => setSelectedCategory(category)}>
                 <Dropdown.Toggle variant="primary">Category</Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  <Dropdown.Item>Cat 1</Dropdown.Item>
-                  <Dropdown.Item>Cat 2</Dropdown.Item>
+                  {categories.map((category) => (
+                    <Dropdown.Item
+                      as="button"
+                      key={category}
+                      eventKey={category}
+                    >
+                      {category}
+                    </Dropdown.Item>
+                  ))}
                 </Dropdown.Menu>
               </Dropdown>
             </Form>
@@ -119,6 +167,7 @@ const HomeScreen = () => {
             pages={data.pages}
             page={data.page}
             keyword={keyword || ""}
+            category={selectedCategory || ""}
           />
         </>
       )}
