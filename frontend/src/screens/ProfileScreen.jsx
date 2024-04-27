@@ -101,6 +101,11 @@ const ProfileScreen = () => {
           </Button>
           {loadingUpdateProfile && <Loader />}
         </Form>
+        <LinkContainer to="/saveditems">
+          <Button variant="info" className="mt-2">
+            View Saved Items
+          </Button>
+        </LinkContainer>
       </Col>
       <Col md={9}>
         <h2>My Orders</h2>

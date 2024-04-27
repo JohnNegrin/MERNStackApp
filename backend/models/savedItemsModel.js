@@ -21,6 +21,6 @@ const savedItemsSchema = mongoose.Schema({
     timestamps: true,
 });
 
-const SavedItems = mongoose.model('SavedItems', savedItemSchema);
+const SavedItems = mongoose.model('SavedItems', savedItemsSchema);
 
 export default SavedItems;
