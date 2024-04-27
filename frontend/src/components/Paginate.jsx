@@ -8,8 +8,8 @@ const Paginate = ({
   isAdmin = false,
   keyword = "",
   category = "",
-  maxPrice = "",
-  minPrice = "",
+  maxPrice,
+  minPrice,
 }) => {
   return (
     pages > 1 && (
@@ -21,7 +21,9 @@ const Paginate = ({
               !isAdmin
                 ? keyword
                   ? `/search/${keyword}/page/${x + 1}`
-                  : `/page/${x + 1}/${category}`
+                  : `/page/${
+                      x + 1
+                    }/${category}/minPrice/${minPrice}/maxPrice/${maxPrice}`
                 : `/admin/productlist/${x + 1}`
             }
           >

@@ -40,12 +40,25 @@ const router = createBrowserRouter(
       <Route path="/search/:keyword" element={<HomeScreen />} />
       <Route path="/page/:pageNumber" element={<HomeScreen />} />
       <Route path="/page/:pageNumber/:category" element={<HomeScreen />} />
+      {/* route contains categroy and price filters */}
       <Route
-        path="/page/:pageNumber/:minPrice/:maxPrice"
+        path="/page/:pageNumber/:category/minPrice/:minPrice/maxPrice/:maxPrice"
         element={<HomeScreen />}
       />
+      {/* route containes only category filter */}
       <Route
-        path="/page/:pageNumber/:category/:minPrice/:maxPrice"
+        path="/page/:pageNumber/:category/minPrice//maxPrice/"
+        element={<HomeScreen />}
+      />
+      {/* route contains only price filter */}
+      <Route
+        path="/page/:pageNumber//minPrice/:minPrice/maxPrice/:maxPrice"
+        element={<HomeScreen />}
+      />
+      {/* Route contains no filters. Added to make the pagination link in 
+          Paginate.jsx less complicated*/}
+      <Route
+        path="/page/:pageNumber//minPrice//maxPrice/"
         element={<HomeScreen />}
       />
       <Route
