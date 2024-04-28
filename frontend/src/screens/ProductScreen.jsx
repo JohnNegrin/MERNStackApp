@@ -66,12 +66,19 @@ const ProductScreen = () => {
       }
     };
 
+    // Loader here is necessary so that the website does not try to access product.image
+    // before product is fully loaded. This is necessary to avoid runtime errors.
     if (isLoading || !product) {
       return <Loader />;
   }
-
+    //shareURL gets the current product page
     const shareUrl = window.location.href;
+
+    //baseUrl assesses the domain of this website dynamically. 
+    //Therefore this code will still work even if hosted on a different domain
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
+
+    //imageUrl is needed for the image to add on pinterest
     const imageUrl = `${baseUrl}${product.image}`;
 
   return (
