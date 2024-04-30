@@ -20,10 +20,18 @@ import Loader from '../components/Loader';
 import Message from '../components/Message';
 import Meta from '../components/Meta';
 import { addToCart } from '../slices/cartSlice';
+import { useSaveForLaterMutation } from '../slices/savedItemsApiSlice';
+import { FaFacebook, FaTwitter, FaPinterestP } from 'react-icons/fa';
+
 
 
 const ProductScreen = () => {
     const {id: productId} = useParams();
+
+    const [
+      saveForLater, 
+      { isLoading: savingForLater, isSuccess: saveSuccess }
+    ] = useSaveForLaterMutation();
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -31,11 +39,20 @@ const ProductScreen = () => {
     const [qty, setQty] = useState(1);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
-  
+
     const addToCartHandler = () => {
       dispatch(addToCart({ ...product, qty }));
       navigate('/cart');
-    };  
+    };
+    
+    const saveForLaterHandler = async () => {
+      try {
+        await saveForLater(productId).unwrap();
+        toast.success('Item saved for later!');
+      } catch (error) {
+        toast.error('Error saving item for later: ' + error.data?.message || error.error);
+      }
+    }; 
 
     const {
       data: product,
@@ -64,6 +81,21 @@ const ProductScreen = () => {
         toast.error(err?.data?.message || err.error);
       }
     };
+
+    // Loader here is necessary so that the website does not try to access product.image
+    // before product is fully loaded. This is necessary to avoid runtime errors.
+    if (isLoading || !product) {
+      return <Loader />;
+  }
+    //shareURL gets the current product page
+    const shareUrl = window.location.href;
+
+    //baseUrl assesses the domain of this website dynamically. 
+    //Therefore this code will still work even if hosted on a different domain
+    const baseUrl = `${window.location.protocol}//${window.location.host}`;
+
+    //imageUrl is needed for the image to add on pinterest
+    const imageUrl = `${baseUrl}${product.image}`;
 
   return (
     <>
@@ -97,6 +129,12 @@ const ProductScreen = () => {
                 <ListGroup.Item>Price: ${product.price}</ListGroup.Item>
                 <ListGroup.Item>
                   Description: {product.description}
+                </ListGroup.Item>
+                <ListGroup.Item>
+                    <div>Share on:</div>
+                    <Button variant="link" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank')}><FaFacebook color="blue" /></Button>
+                    <Button variant="link" onClick={() => window.open(`https://twitter.com/intent/tweet?url=${shareUrl}&text=Check out this product!`, '_blank')}><FaTwitter color="skyblue" /></Button>
+                    <Button variant="link" onClick={() => window.open(`https://pinterest.com/pin/create/button/?url=${shareUrl}&media=${imageUrl}&description=Check out this product on Proshop!`, '_blank')}><FaPinterestP color="red" /></Button>
                 </ListGroup.Item>
               </ListGroup>
             </Col>
@@ -153,6 +191,17 @@ const ProductScreen = () => {
                     >
                       Add To Cart
                     </Button>
+                  </ListGroup.Item>
+
+                  <ListGroup.Item>
+                  <Button
+                    className='btn-block'
+                    type='button'
+                    disabled={product.countInStock === 0}
+                    onClick={() => saveForLaterHandler(product._id)}
+                  >
+                    Save for Later
+                  </Button>
                   </ListGroup.Item>
                 </ListGroup>
               </Card>
