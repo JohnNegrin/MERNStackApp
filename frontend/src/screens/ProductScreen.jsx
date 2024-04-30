@@ -20,11 +20,18 @@ import Loader from '../components/Loader';
 import Message from '../components/Message';
 import Meta from '../components/Meta';
 import { addToCart } from '../slices/cartSlice';
+import { useSaveForLaterMutation } from '../slices/savedItemsApiSlice';
 import { FaFacebook, FaTwitter, FaPinterestP } from 'react-icons/fa';
+
 
 
 const ProductScreen = () => {
     const {id: productId} = useParams();
+
+    const [
+      saveForLater, 
+      { isLoading: savingForLater, isSuccess: saveSuccess }
+    ] = useSaveForLaterMutation();
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -32,11 +39,20 @@ const ProductScreen = () => {
     const [qty, setQty] = useState(1);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
-  
+
     const addToCartHandler = () => {
       dispatch(addToCart({ ...product, qty }));
       navigate('/cart');
-    };  
+    };
+    
+    const saveForLaterHandler = async () => {
+      try {
+        await saveForLater(productId).unwrap();
+        toast.success('Item saved for later!');
+      } catch (error) {
+        toast.error('Error saving item for later: ' + error.data?.message || error.error);
+      }
+    }; 
 
     const {
       data: product,
@@ -175,6 +191,17 @@ const ProductScreen = () => {
                     >
                       Add To Cart
                     </Button>
+                  </ListGroup.Item>
+
+                  <ListGroup.Item>
+                  <Button
+                    className='btn-block'
+                    type='button'
+                    disabled={product.countInStock === 0}
+                    onClick={() => saveForLaterHandler(product._id)}
+                  >
+                    Save for Later
+                  </Button>
                   </ListGroup.Item>
                 </ListGroup>
               </Card>
