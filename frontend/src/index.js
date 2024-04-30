@@ -32,7 +32,7 @@ import ProductEditScreen from './screens/admin/ProductEditScreen';
 import UserEditScreen from './screens/admin/UserEditScreen';
 import UserListScreen from './screens/admin/UserListScreen';
 import SavedItemsScreen from './screens/SavedItemsScreen';
-
+import ContactForm from './components/ContactForm';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path = "/" element = {<App/>}>
@@ -47,6 +47,7 @@ const router = createBrowserRouter(
       <Route path='/cart' element={<CartScreen />} />
       <Route path='/login' element={<LoginScreen />} />
       <Route path='/register' element={<RegisterScreen />} />
+      <Route path="/contact" element={<ContactForm />} /> 
       {/* Registered users */}
       <Route path='' element={<PrivateRoute />}>
         <Route path='/shipping' element={<ShippingScreen />} />
