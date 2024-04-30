@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Row,
@@ -21,6 +20,7 @@ import Loader from '../components/Loader';
 import Message from '../components/Message';
 import Meta from '../components/Meta';
 import { addToCart } from '../slices/cartSlice';
+import { FaFacebook, FaTwitter, FaPinterestP } from 'react-icons/fa';
 
 
 const ProductScreen = () => {
@@ -66,6 +66,21 @@ const ProductScreen = () => {
       }
     };
 
+    // Loader here is necessary so that the website does not try to access product.image
+    // before product is fully loaded. This is necessary to avoid runtime errors.
+    if (isLoading || !product) {
+      return <Loader />;
+  }
+    //shareURL gets the current product page
+    const shareUrl = window.location.href;
+
+    //baseUrl assesses the domain of this website dynamically. 
+    //Therefore this code will still work even if hosted on a different domain
+    const baseUrl = `${window.location.protocol}//${window.location.host}`;
+
+    //imageUrl is needed for the image to add on pinterest
+    const imageUrl = `${baseUrl}${product.image}`;
+
   return (
     <>
       <Link className='btn btn-light my-3' to='/'>
@@ -98,6 +113,12 @@ const ProductScreen = () => {
                 <ListGroup.Item>Price: ${product.price}</ListGroup.Item>
                 <ListGroup.Item>
                   Description: {product.description}
+                </ListGroup.Item>
+                <ListGroup.Item>
+                    <div>Share on:</div>
+                    <Button variant="link" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank')}><FaFacebook color="blue" /></Button>
+                    <Button variant="link" onClick={() => window.open(`https://twitter.com/intent/tweet?url=${shareUrl}&text=Check out this product!`, '_blank')}><FaTwitter color="skyblue" /></Button>
+                    <Button variant="link" onClick={() => window.open(`https://pinterest.com/pin/create/button/?url=${shareUrl}&media=${imageUrl}&description=Check out this product on Proshop!`, '_blank')}><FaPinterestP color="red" /></Button>
                 </ListGroup.Item>
               </ListGroup>
             </Col>
