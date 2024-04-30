@@ -1,29 +1,83 @@
-import asyncHandler from '../middleware/asyncHandler.js';
-import Product from '../models/productModel.js';
+import asyncHandler from "../middleware/asyncHandler.js";
+import Product from "../models/productModel.js";
 
 // @desc    Fetch all products
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
+  // Get paraeters from url
   const pageSize = process.env.PAGINATION_LIMIT;
   const page = Number(req.query.pageNumber) || 1;
-
+  const minPrice = req.query.minPrice
+    ? { name: { $regex: req.query.minPrice, $options: "i" } }
+    : {};
+  const maxPrice = req.query.maxPrice
+    ? { name: { $regex: req.query.maxPrice, $options: "i" } }
+    : {};
+  const category = req.query.category
+    ? { name: { $regex: req.query.category, $options: "i" } }
+    : {};
   const keyword = req.query.keyword
-    ? {
-        name: {
-          $regex: req.query.keyword,
-          $options: 'i',
-        },
-      }
+    ? { name: { $regex: req.query.keyword, $options: "i" } }
     : {};
 
-  const count = await Product.countDocuments({ ...keyword });
-  const products = await Product.find({ ...keyword })
+  // find products based on keyword search
+  let count = await Product.countDocuments({ ...keyword });
+  let products = await Product.find({ ...keyword })
     .limit(pageSize)
     .skip(pageSize * (page - 1));
 
+  // find products based on catefory filter
+  if (category?.name?.$regex) {
+    products = await Product.find({
+      ...keyword,
+      category: category.name?.$regex,
+    });
+
+    // find products based on both categroy and price filter
+    if (minPrice.name?.$regex) {
+      products = await priceFilter(
+        Number(minPrice.name?.$regex),
+        Number(maxPrice.name?.$regex),
+        products
+      );
+    }
+
+    count = products.length;
+
+    // Get number of products based on pagination limit
+    const upperLimit = Number(pageSize * (page - 1) + pageSize);
+    products = products.slice(pageSize * (page - 1), upperLimit);
+  } else if (minPrice.name?.$regex) {
+    // Find products based only on price filter
+    products = await Product.find({});
+
+    products = await priceFilter(
+      Number(minPrice.name?.$regex),
+      Number(maxPrice.name?.$regex),
+      products
+    );
+
+    count = products.length;
+
+    // Get number of products based on pagination limit
+    const upperLimit = Number(pageSize * (page - 1) + pageSize);
+    products = products.slice(pageSize * (page - 1), upperLimit);
+  }
+
   res.json({ products, page, pages: Math.ceil(count / pageSize) });
 });
+
+async function priceFilter(minPrice, maxPrice, products) {
+  products = products.filter(function (product) {
+    if (product.price >= minPrice && product.price <= maxPrice) {
+      return true;
+    }
+    return false;
+  });
+
+  return products;
+}
 
 // @desc    Fetch single product
 // @route   GET /api/products/:id
@@ -34,7 +88,7 @@ const getProductById = asyncHandler(async (req, res) => {
     return res.json(product);
   }
   res.status(404);
-  throw new Error('Resource not found');
+  throw new Error("Resource not found");
 });
 
 // @desc    Create a product
@@ -42,15 +96,15 @@ const getProductById = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const createProduct = asyncHandler(async (req, res) => {
   const product = new Product({
-    name: 'Sample name',
+    name: "Sample name",
     price: 0,
     user: req.user._id,
-    image: '/images/sample.jpg',
-    brand: 'Sample brand',
-    category: 'Sample category',
+    image: "/images/sample.jpg",
+    brand: "Sample brand",
+    category: "Sample category",
     countInStock: 0,
     numReviews: 0,
-    description: 'Sample description',
+    description: "Sample description",
   });
 
   const createdProduct = await product.save();
@@ -78,7 +132,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     res.json(updatedProduct);
   } else {
     res.status(404);
-    throw new Error('Product not found');
+    throw new Error("Product not found");
   }
 });
 
@@ -90,10 +144,10 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
   if (product) {
     await Product.deleteOne({ _id: product._id });
-    res.json({ message: 'Product removed' });
+    res.json({ message: "Product removed" });
   } else {
     res.status(404);
-    throw new Error('Product not found');
+    throw new Error("Product not found");
   }
 });
 
@@ -112,7 +166,7 @@ const createProductReview = asyncHandler(async (req, res) => {
 
     if (alreadyReviewed) {
       res.status(400);
-      throw new Error('Product already reviewed');
+      throw new Error("Product already reviewed");
     }
 
     const review = {
@@ -131,10 +185,10 @@ const createProductReview = asyncHandler(async (req, res) => {
       product.reviews.length;
 
     await product.save();
-    res.status(201).json({ message: 'Review added' });
+    res.status(201).json({ message: "Review added" });
   } else {
     res.status(404);
-    throw new Error('Product not found');
+    throw new Error("Product not found");
   }
 });
 
@@ -147,6 +201,11 @@ const getTopProducts = asyncHandler(async (req, res) => {
   res.json(products);
 });
 
+const getAllProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({});
+  res.json(products);
+});
+
 export {
   getProducts,
   getProductById,
@@ -155,4 +214,5 @@ export {
   deleteProduct,
   createProductReview,
   getTopProducts,
+  getAllProducts,
 };

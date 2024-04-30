@@ -11,8 +11,8 @@ import { resetCart } from "../slices/cartSlice";
 
 const Header = () => {
   const { cartItems } = useSelector((state) => state.cart);
-
   const { userInfo } = useSelector((state) => state.auth);
+  // console.log(userInfo);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const Header = () => {
                 </>
               ) : (
                 <LinkContainer to="/login">
-                  <Nav.Link>
+                  <Nav.Link href="/login">
                     <FaUser /> Sign In
                   </Nav.Link>
                 </LinkContainer>
