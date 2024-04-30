@@ -49,6 +49,11 @@ const HomeScreen = () => {
           />
         </>
       )}
+      <div className="d-flex justify-content-center mt-4">
+        <Link to='/contact' className='btn btn-primary'>
+          Contact Us
+        </Link>
+      </div>
     </>
   );
 };
